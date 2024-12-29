@@ -3,6 +3,7 @@ const sequelize = require('./config/database');
 const { User, Book } = require('./models');
 const db = require('./models');
 const authRoutes = require('./routes/authRoutes');
+const bookRoutes = require('./routes/bookRoutes');
 require('dotenv').config();
 
 const app = express();
@@ -19,6 +20,9 @@ app.get('/', (req, res) => {
 
 // Auth Routes
 app.use('/auth', authRoutes);
+
+// Book Routes
+app.use('/books', bookRoutes);
 
 // Sync Models
 sequelize
