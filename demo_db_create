@@ -1,0 +1,51 @@
+CREATE DATABASE librarydb;
+
+USE librarydb;
+
+CREATE TABLE Authors (
+    author_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    bio TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Books (
+    book_id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    author_id INT,
+    published_year YEAR,
+    genre VARCHAR(50),
+    available BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES Authors(author_id) ON DELETE SET NULL
+);
+
+CREATE TABLE Members (
+    member_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    phone VARCHAR(15),
+    membership_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE BorrowedBooks (
+    borrow_id INT PRIMARY KEY AUTO_INCREMENT,
+    member_id INT,
+    book_id INT,
+    borrowed_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    return_date TIMESTAMP NULL,
+    FOREIGN KEY (member_id) REFERENCES Members(member_id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES Books(book_id) ON DELETE CASCADE
+);
+
+INSERT INTO Authors (name, bio) VALUES 
+('J.K. Rowling', 'Author of the Harry Potter series'),
+('George Orwell', 'Author of 1984 and Animal Farm');
+
+INSERT INTO Books (title, author_id, published_year, genre) VALUES 
+('Harry Potter and the Sorcerer''s Stone', 1, 1997, 'Fantasy'),
+('1984', 2, 1949, 'Dystopian');
+
+INSERT INTO Members (name, email, phone) VALUES 
+('Alice Johnson', 'alice@example.com', '1234567890'),
+('Bob Smith', 'bob@example.com', '9876543210');
