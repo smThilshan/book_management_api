@@ -1,46 +1,36 @@
-// const { Book } = require('../models');
-
-// exports.getAllBooks = async (req, res) => {
-//     const { page = 1, limit = 10 } = req.query;
-//     const books = await Book.findAll({ limit, offset: (page - 1) * limit });
-//     res.json(books);
-// };
-
-// exports.getBookById = async (req, res) => {
-//     const book = await Book.findByPk(req.params.id);
-//     res.json(book);
-// };
-
-// exports.createBook = async (req, res) => {
-//     const { title, author, genre, publishedYear } = req.body;
-//     const book = await Book.create({ title, author, genre, publishedYear });
-//     res.status(201).json(book);
-// };
-
-// exports.updateBook = async (req, res) => {
-//     const { title, author, genre, publishedYear } = req.body;
-//     await Book.update({ title, author, genre, publishedYear }, { where: { id: req.params.id } });
-//     res.json({ message: 'Book updated' });
-// };
-
-// exports.deleteBook = async (req, res) => {
-//     await Book.destroy({ where: { id: req.params.id } });
-//     res.json({ message: 'Book deleted' });
-// };
-
-
-// controllers/bookController.js
 const { Book } = require('../models');
+const { paginationSchema } = require('../validators/bookValidator');
+const { bookSchema } = require('../validators/bookValidator');
 
-// Fetch all books
+
+// Fetch all books with pagination
+
 exports.getBooks = async (req, res) => {
   try {
-    const books = await Book.findAll();
-    res.json(books);
+    const { error } = paginationSchema.validate(req.query);
+    if (error) return res.status(400).json({ message: error.details[0].message });
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Book.findAndCountAll({
+      limit,
+      offset,
+    });
+
+    res.json({
+      totalBooks: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      books: rows,
+    });
   } catch (err) {
+    console.error('Error fetching books:', err);
     res.status(500).json({ message: 'Error fetching books' });
   }
 };
+
 
 // Fetch book by ID
 exports.getBookById = async (req, res) => {
@@ -53,30 +43,49 @@ exports.getBookById = async (req, res) => {
   }
 };
 
-// Add a new book
+
+// Add a new book with validation
 exports.addBook = async (req, res) => {
   try {
-    const { title, author, genre, publishedYear } = req.body;
+    // Validate req.body
+    const { error, value } = bookSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
+    // Destructure validated values
+    const { title, author, genre, publishedYear } = value;
+
+    // Create a new book
     const book = await Book.create({ title, author, genre, publishedYear });
     res.status(201).json(book);
   } catch (err) {
+    console.error('Error adding book:', err);
     res.status(400).json({ message: 'Error adding book' });
   }
 };
 
+
 // Update a book
+
 exports.updateBook = async (req, res) => {
   try {
-    const { title, author, genre, publishedYear } = req.body;
+    const { error, value } = bookSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message });
+    }
+
     const book = await Book.findByPk(req.params.id);
     if (!book) return res.status(404).json({ message: 'Book not found' });
-    
-    await book.update({ title, author, genre, publishedYear });
+
+    await book.update(value);
     res.json({ message: 'Book updated successfully', book });
   } catch (err) {
+    console.error('Error updating book:', err);
     res.status(400).json({ message: 'Error updating book' });
   }
 };
+
 
 // Delete a book
 exports.deleteBook = async (req, res) => {

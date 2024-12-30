@@ -1,17 +1,12 @@
 const express = require('express');
 const sequelize = require('./config/database');
-const { User, Book } = require('./models');
-const db = require('./models');
+const errorHandler = require('./middlewares/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 require('dotenv').config();
 
 const app = express();
-app.use(express.json());
-
-
-app.use(express.json());
-
+app.use(express.json()); // Parse incoming JSON requests
 
 // Test Route
 app.get('/', (req, res) => {
@@ -23,6 +18,9 @@ app.use('/auth', authRoutes);
 
 // Book Routes
 app.use('/books', bookRoutes);
+
+// Global Error Handler Middleware
+app.use(errorHandler);
 
 // Sync Models
 sequelize

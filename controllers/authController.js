@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
-  // console.log("Register page");
+  
 };
 
 // Login User
@@ -57,7 +57,7 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '1h' } // Set time for 1 hour
     );
 
     res.json({ message: 'Login successful', token });
